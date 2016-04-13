@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>FinHelper</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <style>
+        .button-wrapper { float: right; padding: 8px; }
+        .result-wrapper { min-height: 500px; }
+        #data { width: 100%; height: 500px; font-family: monospace; }
+        td.amount { text-align: right; }
+        td.type .income { color: darkgreen; }
+        td.type .expense { color: darkred; }
+        td.type .balance { color: darkgoldenrod; }
+        td.type .transfer { color: darkgreen; }
+        td.type .delta { color: darkorange; }
+        td span[title] { text-decoration: underline; }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="button-wrapper">
+                <button class="btn btn-primary active btn-convert">Convert</button>
+            </div>
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">FinHelper</a>
+            </div>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                </ul>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-12">
+                <form id="form">
+                    <textarea name="data" id="data" placeholder="Paste your data here"></textarea>
+                </form>
+            </div>
+            <div class="col-md-12" id="result-wrapper">
+                <i>Result</i>
+            </div>
+        </div>
+
+    </div> <!-- /container -->
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script>
+        var convert = function (e) {
+            var data = $('#data').val();
+            console.log("Sending data: " + data);
+
+            $.ajax({
+                url: "api/convert",
+                type: "POST",
+                data: JSON.stringify({data: data}),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (response) {
+                    $('#result-wrapper').html(response);
+                    console.log(response);
+                }
+            });
+        };
+
+        $('.btn-convert').on('click', convert);
+        $('#data').focusout(convert);
+    </script>
+
+
+</body>
+</html>
+
+
