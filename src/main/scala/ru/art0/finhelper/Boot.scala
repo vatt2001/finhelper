@@ -3,7 +3,7 @@ package ru.art0.finhelper
 import akka.actor.{ActorRefFactory, Actor, ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
-import ru.art0.finhelper.ComponentWiring.{TableRendererComponentImpl, HelperServiceComponentImpl}
+import ru.art0.finhelper.ComponentWiring.{ConfigurationComponentImpl, TableRendererComponentImpl, HelperServiceComponentImpl}
 import ru.art0.finhelper.controllers.{Controller, StaticController, FinHelperController}
 import spray.can.Http
 import akka.pattern.ask
@@ -35,10 +35,10 @@ class FinHelperActor extends Actor with Controller {
     }
 
   val controllers = Seq(
-    new FinHelperController with HelperServiceComponentImpl with TableRendererComponentImpl {
+    new FinHelperController with HelperServiceComponentImpl with TableRendererComponentImpl with ConfigurationComponentImpl {
       override implicit def actorRefFactory: ActorRefFactory = context
     },
-    new StaticController {
+    new StaticController with ConfigurationComponentImpl {
       override implicit def actorRefFactory: ActorRefFactory = context
     }
   )

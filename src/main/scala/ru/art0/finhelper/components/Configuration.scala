@@ -16,6 +16,8 @@ trait Configuration {
   def httpHost = getOpt(globalPrefix("host")).getOrElse("localhost")
   def httpPort = getOpt(globalPrefix("port")).getOrElse("8080").toInt
 
+  def pathPrefix = getOpt(globalPrefix("path-prefix")).getOrElse("")
+
   def incomeCategories: Seq[String] = toList(getOpt(IncomeCategories).getOrElse("доходы"))
   def transferCategories: Seq[String] = toList(getOpt(TransferCategories).getOrElse("-"))
   def deltaCategories: Seq[String] = toList(getOpt(DeltaCategories).getOrElse("дельта"))

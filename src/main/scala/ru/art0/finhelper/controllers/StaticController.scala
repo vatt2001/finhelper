@@ -1,12 +1,17 @@
 package ru.art0.finhelper.controllers
 
+import ru.art0.finhelper.components.ConfigurationComponent
+
 trait StaticController extends Controller {
 
-  val route = {
-    pathEndOrSingleSlash {
-      getFromResource("public/index.html")
-    } ~
-      getFromResourceDirectory("public")
-  }
+  this: ConfigurationComponent =>
+
+  val route =
+    rawPathPrefix(config.pathPrefix) {
+      pathEndOrSingleSlash {
+        getFromResource("public/index.html")
+      } ~
+        getFromResourceDirectory("public")
+    }
 
 }
