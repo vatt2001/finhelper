@@ -17,7 +17,7 @@ trait TableRendererComponent {
 class TableRendererImpl extends TableRenderer {
 
   override def render(rows: Seq[ConvertResultItem]): String = {
-    val balancePurses = extractBalancePurses(rows)
+    val balancePurses = extractBalancePurses(rows).sorted
     val header = formatHeader(rows, balancePurses)
     val columnsQty = header.child.size
 
