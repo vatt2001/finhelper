@@ -12,12 +12,10 @@ trait FinHelperController extends Controller {
   implicit lazy val convertRequestReads = Json.reads[ConvertRequest]
 
   val route =
-    rawPathPrefix(config.pathPrefix) {
-      pathPrefix("api") {
-        (post & path("convert") & entity(as[ConvertRequest])) { request =>
-          val lineSeq = helperService.convert(request.data)
-          complete(tableRenderer.render(lineSeq))
-        }
+    pathPrefix("api") {
+      (post & path("convert") & entity(as[ConvertRequest])) { request =>
+        val lineSeq = helperService.convert(request.data)
+        complete(tableRenderer.render(lineSeq))
       }
     }
 

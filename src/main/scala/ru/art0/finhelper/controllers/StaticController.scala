@@ -7,11 +7,9 @@ trait StaticController extends Controller {
   this: ConfigurationComponent =>
 
   val route =
-    rawPathPrefix(config.pathPrefix) {
-      pathEndOrSingleSlash {
-        getFromResource("public/index.html")
-      } ~
-        getFromResourceDirectory("public")
-    }
+    pathEndOrSingleSlash {
+      getFromResource("public/index.html")
+    } ~
+      getFromResourceDirectory("public")
 
 }
