@@ -17,7 +17,8 @@ libraryDependencies ++= {
     "com.typesafe.akka"   %%  "akka-testkit"  % akkaV   % "test",
     "joda-time"           % "joda-time"       % "2.9.3",
     "com.typesafe"        % "config"          % "1.3.0",
-    "com.typesafe.play"   %% "play-json"      % "2.5.1"
+    "com.typesafe.play"   %% "play-json"      % "2.5.1",
+    "org.scalatest" %% "scalatest" % "2.2.6" % "test"
   )
 }
 

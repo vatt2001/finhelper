@@ -4,7 +4,7 @@ import java.util.Currency
 
 import org.joda.time.LocalDate
 import ru.art0.finhelper.components.PrimitiveParser.ParseException
-import ru.art0.finhelper.models.{Purse, Type}
+import ru.art0.finhelper.models.{Purse, RecordType}
 
 trait PrimitiveParserComponent {
   def dateParser: DateParser
@@ -38,7 +38,7 @@ class DateParser extends PrimitiveParser[LocalDate] {
   override protected def doParse(s:String): LocalDate = {
     s match {
       case PrimitiveParser.DatePattern(day, month) => new LocalDate(resolveYear(month.toInt), month.toInt, day.toInt)
-      case _ => throw new ParseException(s"""Can not parse date "${s}" """)
+      case _ => throw new ParseException(s"""Can not parse date "$s" """)
     }
   }
 
@@ -59,12 +59,12 @@ class AmountParser extends PrimitiveParser[Long] {
           case "K" | "К" => 1000
           case "M" | "М" => 1000000
           case "" => 1
-          case _ => throw new ParseException(s"""Unexpected amount modifier value: "${modifier}" """)
+          case _ => throw new ParseException(s"""Unexpected amount modifier value: "$modifier" """)
         }
 
       amount.toLong * modifierValue
 
-    case _ => throw new ParseException(s"""Can not parse amount "${s}" """)
+    case _ => throw new ParseException(s"""Can not parse amount "$s" """)
   }
 }
 
@@ -89,22 +89,22 @@ class CurrencyParser extends PrimitiveParser[Currency] {
           }
         )
       } catch {
-        case e: IllegalArgumentException => throw new ParseException(s"""Unexpected currency code: "${currencyCode}" """)
+        case e: IllegalArgumentException => throw new ParseException(s"""Unexpected currency code: "$currencyCode" """)
       }
 
-    case _ => throw new ParseException(s"""Can not parse amount "${s}" """)
+    case _ => throw new ParseException(s"""Can not parse amount "$s" """)
   }
 }
 
-class TypeParser extends PrimitiveParser[Type.Type] {
+class TypeParser extends PrimitiveParser[RecordType.RecordType] {
   this: ConfigurationComponent =>
 
-  override protected def doParse(s:String): Type.Type = s match {
-    case c if (config.incomeCategories.contains(c)) => Type.Income
-    case c if (config.transferCategories.contains(c)) => Type.Transfer
-    case c if (config.deltaCategories.contains(c)) => Type.Delta
-    case c if (config.balanceCategories.contains(c)) => Type.Balance
-    case _ => Type.Expense
+  override protected def doParse(s:String): RecordType.RecordType = s match {
+    case c if config.incomeCategories.contains(c) => RecordType.Income
+    case c if config.transferCategories.contains(c) => RecordType.Transfer
+    case c if config.deltaCategories.contains(c) => RecordType.Delta
+    case c if config.balanceCategories.contains(c) => RecordType.Balance
+    case _ => RecordType.Expense
   }
 }
 
@@ -113,7 +113,7 @@ class CategoryParser extends PrimitiveParser[String] {
 
   override protected def doParse(s:String): String = s match {
     case _ if config.validCategories.contains(s) => s
-    case _ => throw new ParseException(s"""Unknown category: "${s}" """)
+    case _ => throw new ParseException(s"""Unknown category: "$s" """)
   }
 }
 
@@ -126,7 +126,7 @@ class PurseParser extends PrimitiveParser[Purse] {
 
   override protected def doParse(s:String): Purse = s match {
     case _ if config.validPurses.contains(s) => s
-    case _ => throw new ParseException(s"""Unknown purse code: "${s}" """)
+    case _ => throw new ParseException(s"""Unknown purse code: "$s" """)
   }
 
   def parseWithDefaultCondition(s: String, canBeDefault: Boolean): Option[Purse] = {

@@ -1,7 +1,7 @@
 package ru.art0.finhelper.models
 
-object Type extends Enumeration {
-  type Type = Value
+object RecordType extends Enumeration {
+  type RecordType = Value
 
   val Income = Value("income")
   val Expense = Value("expense")

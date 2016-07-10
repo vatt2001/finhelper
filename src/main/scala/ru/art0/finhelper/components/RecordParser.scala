@@ -1,7 +1,7 @@
 package ru.art0.finhelper.components
 
 import ru.art0.finhelper.components.PrimitiveParser.ParseException
-import ru.art0.finhelper.models.{Record, Type}
+import ru.art0.finhelper.models.{Record, RecordType}
 
 trait RecordParser {
   def parse(lines: Seq[String]): Seq[Either[String, Record]]
@@ -36,8 +36,8 @@ class RecordParserImpl extends RecordParser {
             `type`,
             categoryParser.parseRequired(category),
             dateParser.parseRequired(date),
-            purseParser.parseWithDefaultCondition(srcPurse, true).get,
-            purseParser.parseWithDefaultCondition(dstPurse, `type` == Type.Transfer),
+            purseParser.parseWithDefaultCondition(srcPurse, canBeDefault = true).get,
+            purseParser.parseWithDefaultCondition(dstPurse, `type` == RecordType.Transfer),
             amountParser.parseRequired(amountCurrencyString),
             currencyParser.parseRequired(amountCurrencyString),
             stringParser.parse(description).getOrElse(""),
@@ -57,13 +57,13 @@ class RecordParserImpl extends RecordParser {
   }
 
   private def validate(record: Record): Unit = {
-    if (record.`type` == Type.Transfer && record.dstPurse.isEmpty) {
+    if (record.`type` == RecordType.Transfer && record.dstPurse.isEmpty) {
       throw new ValidationException("Transfer operation should have destination purse")
-    } else if (record.`type` != Type.Transfer && record.dstPurse.nonEmpty) {
+    } else if (record.`type` != RecordType.Transfer && record.dstPurse.nonEmpty) {
       throw new ValidationException("Only transfer operations allowed to have destination purse")
-    } else if (record.`type` == Type.Delta && record.dstPurse.nonEmpty) {
+    } else if (record.`type` == RecordType.Delta && record.dstPurse.nonEmpty) {
       throw new ValidationException("Delta operation should not have a destination purse")
-    } else if (record.`type` == Type.Delta && record.dstPurse.nonEmpty) {
+    } else if (record.`type` == RecordType.Delta && record.dstPurse.nonEmpty) {
       throw new ValidationException("Delta operation should not have a destination purse")
     } else if (record.dstBalance.isDefined && record.dstPurse.isEmpty) {
       throw new ValidationException("Destination purse balance is set while destination purse is empty")

@@ -29,11 +29,11 @@ class TableRendererImpl extends TableRenderer {
           row => formatSimpleRow(balancePurses, row)
         )
       )
-    ).toString
+    ).toString()
   }
 
   private def extractBalancePurses(rows: Seq[ConvertResultItem]): Seq[Purse] = {
-    val finalBalances = rows.filter(_.isRight).lastOption.fold(emptyBalance)(_.right.get._2)
+    val finalBalances = rows.filter(_.isRight).lastOption.fold(emptyBalance)(_.right.get.balanceSnapshot)
     finalBalances.keys.toSeq
   }
 
@@ -60,14 +60,14 @@ class TableRendererImpl extends TableRenderer {
     </tr>
   }
 
-  private def formatSimpleRow(balancePurses: Seq[Purse], row: (Record, BalanceSnapshot)): Elem =
+  private def formatSimpleRow(balancePurses: Seq[Purse], row: RecordWithSnapshot): Elem =
     row match {
-      case (record, balance) =>
+      case RecordWithSnapshot(record, balance) =>
 
         val balanceCells =
           balancePurses.map(key =>
             balance.get(key).fold("")(b =>
-              decimalFormat.format(b.amount).toString
+              decimalFormat.format(b.amount)
             )
           ).map { value =>
             <td class="balance amount">{value}</td>
@@ -123,14 +123,14 @@ class TableRendererImpl extends TableRenderer {
     Unparsed(value.replace(" ", "&nbsp;"))
   }
 
-  private def formatType(operationType: Type.Type): Elem = {
+  private def formatType(operationType: RecordType.RecordType): Elem = {
     val icon =
       operationType match {
-        case Type.Balance => "balance glyphicon glyphicon-piggy-bank"
-        case Type.Delta => "delta glyphicon glyphicon-flash"
-        case Type.Expense => "expense glyphicon glyphicon-minus"
-        case Type.Income => "income glyphicon glyphicon-plus"
-        case Type.Transfer => "transfer glyphicon glyphicon-transfer"
+        case RecordType.Balance => "balance glyphicon glyphicon-piggy-bank"
+        case RecordType.Delta => "delta glyphicon glyphicon-flash"
+        case RecordType.Expense => "expense glyphicon glyphicon-minus"
+        case RecordType.Income => "income glyphicon glyphicon-plus"
+        case RecordType.Transfer => "transfer glyphicon glyphicon-transfer"
       }
     <span class={icon} aria-hidden="true"></span>
   }

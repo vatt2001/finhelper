@@ -5,7 +5,7 @@ import java.util.Currency
 import org.joda.time.LocalDate
 
 case class Record(line: Int,
-                 `type`: Type.Type,
+                 `type`: RecordType.RecordType,
                  category: String,
                  dateAt: LocalDate,
                  srcPurse: Purse,
