@@ -29,16 +29,36 @@ class BalanceCalculatorSpec extends FlatSpec with Matchers {
     )
   }
 
-  it should "generate error on updating balances for unknown purse" in {
+  it should "generate delta on subsequent balance records" in {
     val records = Seq(
-      SampleExpenseRecord
+      SampleBalanceRecord,
+      SampleBalanceRecord.copy(amount = SampleBalanceRecord.amount * 2)
     )
 
     val result = calculator.calculateBalances(records)
 
-    result.size shouldBe 1
-    result.head.isRight should be (false)
-    result.head.left.get should include ("Unexpected purse")
+    val expectedDeltaRecord =
+      DeltaRecordTemplate.copy(
+        srcPurse = SrcPurse,
+        amount = -SampleBalanceRecord.amount
+      )
+
+    result.size shouldBe 3
+    result.foreach(_.isRight should be (true))
+
+    result.head.right.get.record shouldBe SampleBalanceRecord
+    result(1).right.get.record shouldBe expectedDeltaRecord
+    result(2).right.get.record shouldBe SampleBalanceRecord.copy(amount = SampleBalanceRecord.amount * 2)
+
+    result.head.right.get.balanceSnapshot shouldBe Map(
+      SampleBalanceRecord.srcPurse -> AmountCurrency(SampleBalanceRecord.amount, SampleBalanceRecord.currency)
+    )
+    result(1).right.get.balanceSnapshot shouldBe Map(
+      SampleBalanceRecord.srcPurse -> AmountCurrency(SampleBalanceRecord.amount * 2, SampleBalanceRecord.currency)
+    )
+    result(2).right.get.balanceSnapshot shouldBe Map(
+      SampleBalanceRecord.srcPurse -> AmountCurrency(SampleBalanceRecord.amount * 2, SampleBalanceRecord.currency)
+    )
   }
 
   it should "update balances for Expense records without known balance after operation" in {
@@ -77,9 +97,7 @@ class BalanceCalculatorSpec extends FlatSpec with Matchers {
       )
 
     result.size shouldBe 3
-    result(0).isRight should be (true)
-    result(1).isRight should be (true)
-    result(2).isRight should be (true)
+    result.foreach(_.isRight should be (true))
 
     result(1).right.get.record shouldBe expectedDeltaRecord
     result(2).right.get.record shouldBe SampleExpenseRecord
@@ -172,18 +190,24 @@ class BalanceCalculatorSpec extends FlatSpec with Matchers {
     )
   }
 
-  "generateDeltaOpt" should "generate nothing for record without balance" in {
+  "generateStandardDeltas" should "generate nothing for record without balance" in {
     val map = new BalancesMap
-    val record = SampleTransferRecord.copy(srcBalance = None)
+    val record = SampleTransferRecord.copy(srcBalance = None, dstBalance = None)
 
-    val result = calculator.generateDeltaOpt(record, record.srcPurse, map)
+    val result = calculator.generateStandardDeltas(record, map)
 
-    result shouldBe None
+    result shouldBe List()
   }
 
-  it should "generate delta for Src purse" in {
+  it should "generate proper delta for Src purse" in {
+
+    // balanceMap: 100
+    // expected delta: 85 (record.amount 85)
+    // operation: -5 (record.amount 5)
+    // balanceAfter: 10
+
     val map = new BalancesMap
-    val record = SampleTransferRecord
+    val record = SampleTransferRecord.copy(dstBalance = None)
     val srcBalanceMapAmount = 100
     map.initPurse(record.srcPurse, srcBalanceMapAmount, SampleCurrency)
     val expectedDelta = DeltaRecordTemplate.copy(
@@ -195,14 +219,14 @@ class BalanceCalculatorSpec extends FlatSpec with Matchers {
       record.srcPurse -> AmountCurrency(record.amount + record.srcBalance.get, SampleCurrency)
     )
 
-    val result = calculator.generateDeltaOpt(record, record.srcPurse, map)
+    val result = calculator.generateStandardDeltas(record, map)
 
-    result.isDefined shouldBe true
-    result.get.record shouldBe expectedDelta
-    result.get.balanceSnapshot shouldBe expectedSnapshot
+    result.size shouldBe 1
+    result.head.record shouldBe expectedDelta
+    result.head.balanceSnapshot shouldBe expectedSnapshot
   }
 
-  it should "generate delta for Dst purse" in {
+  it should "generate proper delta for Dst purse" in {
 
     // balanceMap: 100
     // expected delta: -85 (record.amount 85)
@@ -210,7 +234,7 @@ class BalanceCalculatorSpec extends FlatSpec with Matchers {
     // balanceAfter: 20
 
     val map = new BalancesMap
-    val record = SampleTransferRecord
+    val record = SampleTransferRecord.copy(srcBalance = None)
     val dstBalanceMapAmount = 100
     map.initPurse(record.dstPurse.get, dstBalanceMapAmount, SampleCurrency)
     val expectedDelta = DeltaRecordTemplate.copy(
@@ -222,23 +246,19 @@ class BalanceCalculatorSpec extends FlatSpec with Matchers {
       record.dstPurse.get -> AmountCurrency(-record.amount + record.dstBalance.get, SampleCurrency)
     )
 
-    val result = calculator.generateDeltaOpt(record, record.dstPurse.get, map)
+    val result = calculator.generateStandardDeltas(record, map)
 
-    result.isDefined shouldBe true
-    result.get.record shouldBe expectedDelta
-    result.get.balanceSnapshot shouldBe expectedSnapshot
+    result.size shouldBe 1
+    result.head.record shouldBe expectedDelta
+    result.head.balanceSnapshot shouldBe expectedSnapshot
   }
 
   it should "generate error if BalanceMap does not contain the purse" in {
     val map = new BalancesMap
     val record = SampleTransferRecord
 
-    // TODO: use proper test library method
-    try {
-      calculator.generateDeltaOpt(record, record.srcPurse, map)
-      fail("Exception should be thrown")
-    } catch {
-      case e: RuntimeException =>
+    a [RuntimeException] should be thrownBy {
+      calculator.generateStandardDeltas(record, map)
     }
   }
 

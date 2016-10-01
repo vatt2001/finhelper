@@ -14,7 +14,7 @@ trait Configuration {
   def underlying: Config
 
   def httpHost = getOpt(globalPrefix("host")).getOrElse("localhost")
-  def httpPort = getOpt(globalPrefix("port")).getOrElse("8080").toInt
+  def httpPort = getRequired(globalPrefix("port")).toInt
 
   def incomeCategories: Seq[String] = toList(getOpt(IncomeCategories).getOrElse("доходы"))
   def transferCategories: Seq[String] = toList(getOpt(TransferCategories).getOrElse("-"))

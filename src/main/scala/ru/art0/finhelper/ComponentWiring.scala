@@ -8,10 +8,9 @@ object ComponentWiring {
 
   lazy val configurationImpl = new Configuration {
     private lazy val envConfig = ConfigFactory.systemEnvironment()
-    private lazy val resourcesConfig = ConfigFactory.load("application.conf")
     private lazy val fileConfig = ConfigFactory.load()
 
-    override def underlying: Config = envConfig withFallback(fileConfig) withFallback(resourcesConfig)
+    override def underlying: Config = envConfig.withFallback(fileConfig)
   }
   trait ConfigurationComponentImpl extends ConfigurationComponent {
     override def config: Configuration = configurationImpl
